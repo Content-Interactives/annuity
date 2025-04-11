@@ -24,6 +24,29 @@ const presentQuestions = [
         r: "Convert the annual interest rate to a monthly decimal",
         n: "Calculate the total number of monthly payments"
       }
+    },
+    step2: {
+      title: "How does each variable affect the present value?",
+      questions: [
+        {
+          variable: "PMT",
+          text: "If the monthly payment (PMT) increases, the present value will:",
+          options: ["Increase", "Decrease", "Stay the same"],
+          correct: "Increase"
+        },
+        {
+          variable: "r",
+          text: "If the interest rate (r) increases, the present value will:",
+          options: ["Increase", "Decrease", "Stay the same"],
+          correct: "Decrease"
+        },
+        {
+          variable: "n",
+          text: "If the number of periods (n) increases, the present value will:",
+          options: ["Increase", "Decrease", "Stay the same"],
+          correct: "Increase"
+        }
+      ]
     }
   },
   {
@@ -72,6 +95,29 @@ const futureQuestions = [
         r: "Convert the annual interest rate to a monthly decimal",
         n: "Calculate the total number of monthly deposits"
       }
+    },
+    step2: {
+      title: "How does each variable affect the future value?",
+      questions: [
+        {
+          variable: "PMT",
+          text: "If the monthly deposit (PMT) increases, the future value will:",
+          options: ["Increase", "Decrease", "Stay the same"],
+          correct: "Increase"
+        },
+        {
+          variable: "r",
+          text: "If the interest rate (r) increases, the future value will:",
+          options: ["Increase", "Decrease", "Stay the same"],
+          correct: "Increase"
+        },
+        {
+          variable: "n",
+          text: "If the number of periods (n) increases, the future value will:",
+          options: ["Increase", "Decrease", "Stay the same"],
+          correct: "Increase"
+        }
+      ]
     }
   },
   {
@@ -102,7 +148,14 @@ const futureQuestions = [
 
 const Annuity = () => {
   const [practiceType, setPracticeType] = useState('present');
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [questionIndices, setQuestionIndices] = useState({
+    present: 0,
+    future: 0
+  });
+  const [currentSteps, setCurrentSteps] = useState({
+    present: 1,
+    future: 1
+  });
   const [payment, setPayment] = useState(presentQuestions[0].payment);
   const [rate, setRate] = useState(presentQuestions[0].rate);
   const [periods, setPeriods] = useState(presentQuestions[0].periods);
@@ -118,9 +171,16 @@ const Annuity = () => {
     { id: 'periods-1', value: presentQuestions[0].periods, type: 'periods' }
   ]);
   const [droppedNumbers, setDroppedNumbers] = useState({
-    PMT: null,
-    r: null,
-    n: null
+    present: {
+      PMT: null,
+      r: null,
+      n: null
+    },
+    future: {
+      PMT: null,
+      r: null,
+      n: null
+    }
   });
   const [isDragging, setIsDragging] = useState(false);
   const [draggedNumber, setDraggedNumber] = useState(null);
@@ -132,13 +192,39 @@ const Annuity = () => {
   const [formulaNumerator, setFormulaNumerator] = useState('');
   const [formulaDenominator, setFormulaDenominator] = useState('');
   const [hasError, setHasError] = useState({
-    step1: false
+    present: {
+      step1: false,
+      step2: false,
+      step3: false,
+      step4: false,
+      step5: false
+    },
+    future: {
+      step1: false,
+      step2: false,
+      step3: false,
+      step4: false,
+      step5: false
+    }
   });
   const [stepAnswers, setStepAnswers] = useState({
     step1: ''
   });
   const [completedSteps, setCompletedSteps] = useState({
-    step1: false
+    present: {
+      step1: false,
+      step2: false,
+      step3: false,
+      step4: false,
+      step5: false
+    },
+    future: {
+      step1: false,
+      step2: false,
+      step3: false,
+      step4: false,
+      step5: false
+    }
   });
   const [draggedPosition, setDraggedPosition] = useState({ x: 0, y: 0 });
   const [isReturning, setIsReturning] = useState(false);
@@ -149,10 +235,30 @@ const Annuity = () => {
     periods: { value: periods, element: null }
   });
   const [validationResults, setValidationResults] = useState({
-    PMT: null,
-    r: null,
-    n: null
+    present: {
+      PMT: null,
+      r: null,
+      n: null
+    },
+    future: {
+      PMT: null,
+      r: null,
+      n: null
+    }
   });
+  const [step2Answers, setStep2Answers] = useState({
+    present: {
+      PMT: null,
+      r: null,
+      n: null
+    },
+    future: {
+      PMT: null,
+      r: null,
+      n: null
+    }
+  });
+  const [step5Answer, setStep5Answer] = useState('');
 
   useEffect(() => {
     setOriginalBoxes({
@@ -164,13 +270,14 @@ const Annuity = () => {
 
   useEffect(() => {
     const questions = practiceType === 'present' ? presentQuestions : futureQuestions;
-    const currentQuestion = questions[currentQuestionIndex];
+    const currentIndex = questionIndices[practiceType];
+    const currentQuestion = questions[currentIndex];
     setDraggableBoxes([
       { id: 'payment-1', value: `$${currentQuestion.payment}`, type: 'payment' },
       { id: 'rate-1', value: `${currentQuestion.rate}%`, type: 'rate' },
       { id: 'periods-1', value: currentQuestion.periods, type: 'periods' }
     ]);
-  }, [practiceType, currentQuestionIndex]);
+  }, [practiceType, questionIndices]);
 
   const calculatePresentValue = (pmt, r, n) => {
     return pmt * (1 - Math.pow(1 + r, -n)) / r;
@@ -181,47 +288,97 @@ const Annuity = () => {
   };
 
   const nextQuestion = () => {
-    const questions = practiceType === 'present' ? presentQuestions : futureQuestions;
-    const nextIndex = (currentQuestionIndex + 1) % questions.length;
-    setCurrentQuestionIndex(nextIndex);
-    const question = questions[nextIndex];
-    setPayment(question.payment);
-    setRate(question.rate);
-    setPeriods(question.periods);
-    
-    setUserInput1('');
-    setUserInput2('');
-    setUserInput3('');
-    setFormulaFirstPart('');
-    setFormulaNumerator('');
-    setFormulaDenominator('');
-    setCurrentStep(1);
-    setCompletedSteps({
-      step1: false
-    });
-    setHasError({
-      step1: false
-    });
-    setStepAnswers({
-      step1: ''
-    });
-    setDraggedNumber(null);
-    setDroppedNumbers({
-      PMT: null,
-      r: null,
-      n: null
-    });
+    if (currentSteps[practiceType] < 5) {
+      setCurrentSteps(prev => ({
+        ...prev,
+        [practiceType]: prev[practiceType] + 1
+      }));
+    } else {
+      const questions = practiceType === 'present' ? presentQuestions : futureQuestions;
+      const currentIndex = questionIndices[practiceType];
+      const nextIndex = (currentIndex + 1) % questions.length;
+      
+      setQuestionIndices(prev => ({
+        ...prev,
+        [practiceType]: nextIndex
+      }));
+      
+      const question = questions[nextIndex];
+      setPayment(question.payment);
+      setRate(question.rate);
+      setPeriods(question.periods);
+      
+      setUserInput1('');
+      setUserInput2('');
+      setUserInput3('');
+      setFormulaFirstPart('');
+      setFormulaNumerator('');
+      setFormulaDenominator('');
+      setCurrentSteps(prev => ({
+        ...prev,
+        [practiceType]: 1
+      }));
+      setCompletedSteps(prev => ({
+        ...prev,
+        [practiceType]: {
+          step1: false,
+          step2: false,
+          step3: false,
+          step4: false,
+          step5: false
+        }
+      }));
+      setHasError(prev => ({
+        ...prev,
+        [practiceType]: {
+          step1: false,
+          step2: false,
+          step3: false,
+          step4: false,
+          step5: false
+        }
+      }));
+      setStepAnswers({
+        step1: ''
+      });
+      setDraggedNumber(null);
+      setDroppedNumbers(prev => ({
+        ...prev,
+        [practiceType]: {
+          PMT: null,
+          r: null,
+          n: null
+        }
+      }));
+      setValidationResults(prev => ({
+        ...prev,
+        [practiceType]: {
+          PMT: null,
+          r: null,
+          n: null
+        }
+      }));
+      setStep2Answers(prev => ({
+        ...prev,
+        [practiceType]: {
+          PMT: null,
+          r: null,
+          n: null
+        }
+      }));
+      setStep5Answer('');
+    }
   };
 
   const toggleAnnuityType = () => {
     setPracticeType(prev => {
       const newType = prev === 'present' ? 'future' : 'present';
       const questions = newType === 'present' ? presentQuestions : futureQuestions;
-      const question = questions[0];
+      const currentIndex = questionIndices[newType];
+      const question = questions[currentIndex];
       setPayment(question.payment);
       setRate(question.rate);
       setPeriods(question.periods);
-      setCurrentQuestionIndex(0);
       return newType;
     });
   };
@@ -239,8 +396,19 @@ const Annuity = () => {
     };
     
     setStepAnswers(prev => ({ ...prev, [`step${step}`]: answers[step] }));
-    setCompletedSteps(prev => ({ ...prev, [`step${step}`]: true }));
-    if (step < 3) setCurrentStep(step + 1);
+    setCompletedSteps(prev => ({
+      ...prev,
+      [practiceType]: {
+        ...prev[practiceType],
+        [`step${step}`]: true
+      }
+    }));
+    if (step < 3) {
+      setCurrentSteps(prev => ({
+        ...prev,
+        [practiceType]: step + 1
+      }));
+    }
   };
 
   const dragElement = (element) => {
@@ -374,7 +542,10 @@ const Annuity = () => {
         if (position) {
           setDroppedNumbers(prev => ({
             ...prev,
-            [position]: element.textContent
+            [practiceType]: {
+              ...prev[practiceType],
+              [position]: element.textContent
+            }
           }));
         }
       } else {
@@ -383,7 +554,10 @@ const Annuity = () => {
           if (position) {
             setDroppedNumbers(prev => ({
               ...prev,
-              [position]: null
+              [practiceType]: {
+                ...prev[practiceType],
+                [position]: null
+              }
             }));
           }
         }
@@ -425,10 +599,12 @@ const Annuity = () => {
     e.preventDefault();
     setIsDragging(false);
     if (draggedNumber) {
-      // Simply copy the exact value to the slot
       setDroppedNumbers(prev => ({
         ...prev,
-        [position]: draggedNumber
+        [practiceType]: {
+          ...prev[practiceType],
+          [position]: draggedNumber
+        }
       }));
       
       const droppedElement = document.querySelector('.draggable-box[style*="opacity: 0"]');
@@ -444,7 +620,10 @@ const Annuity = () => {
   const handleRemove = (position) => {
     setDroppedNumbers(prev => ({
       ...prev,
-      [position]: ''
+      [practiceType]: {
+        ...prev[practiceType],
+        [position]: ''
+      }
     }));
   };
 
@@ -475,9 +654,9 @@ const Annuity = () => {
     };
 
     const userInputs = {
-      PMT: droppedNumbers.PMT,
-      r: droppedNumbers.r,
-      n: droppedNumbers.n
+      PMT: droppedNumbers[practiceType].PMT,
+      r: droppedNumbers[practiceType].r,
+      n: droppedNumbers[practiceType].n
     };
 
     let allCorrect = true;
@@ -489,15 +668,102 @@ const Annuity = () => {
       if (!isValid) allCorrect = false;
     });
 
-    setHasError(prev => ({ ...prev, [`step${step}`]: !allCorrect }));
-    setValidationResults(validationResults);
+    setHasError(prev => ({
+      ...prev,
+      [practiceType]: {
+        ...prev[practiceType],
+        [`step${step}`]: !allCorrect
+      }
+    }));
+    setValidationResults(prev => ({
+      ...prev,
+      [practiceType]: validationResults
+    }));
     
     if (allCorrect) {
       setStepAnswers(prev => ({ ...prev, [`step${step}`]: answers[step] }));
-      setCompletedSteps(prev => ({ ...prev, [`step${step}`]: true }));
+      setCompletedSteps(prev => ({
+        ...prev,
+        [practiceType]: {
+          ...prev[practiceType],
+          [`step${step}`]: true
+        }
+      }));
     }
     
     return allCorrect;
+  };
+
+  const handleStep2Answer = (variable, answer) => {
+    setStep2Answers(prev => ({
+      ...prev,
+      [practiceType]: {
+        ...prev[practiceType],
+        [variable]: answer
+      }
+    }));
+    // Reset error state when a new answer is selected
+    setHasError(prev => ({
+      ...prev,
+      [practiceType]: {
+        ...prev[practiceType],
+        [`step${currentSteps[practiceType]}`]: false
+      }
+    }));
+  };
+
+  const checkStep2Answer = () => {
+    const currentQuestion = (practiceType === 'present' 
+      ? presentQuestions[questionIndices.present].step2.questions 
+      : futureQuestions[questionIndices.future].step2.questions)[currentSteps[practiceType] - 2];
+    
+    const isCorrect = step2Answers[practiceType][currentQuestion.variable] === currentQuestion.correct;
+    
+    if (isCorrect) {
+      setCompletedSteps(prev => ({
+        ...prev,
+        [practiceType]: {
+          ...prev[practiceType],
+          [`step${currentSteps[practiceType]}`]: true
+        }
+      }));
+    } else {
+      setHasError(prev => ({
+        ...prev,
+        [practiceType]: {
+          ...prev[practiceType],
+          [`step${currentSteps[practiceType]}`]: true
+        }
+      }));
+    }
+  };
+
+  const checkStep5Answer = () => {
+    const r = rate / 100;
+    const correctAnswer = practiceType === 'present'
+      ? calculatePresentValue(payment, r, periods)
+      : calculateFutureValue(payment, r, periods);
+    
+    const userAnswer = parseFloat(step5Answer);
+    const isCorrect = Math.abs(userAnswer - correctAnswer) < 0.1;
+    
+    if (isCorrect) {
+      setCompletedSteps(prev => ({
+        ...prev,
+        [practiceType]: {
+          ...prev[practiceType],
+          step5: true
+        }
+      }));
+    } else {
+      setHasError(prev => ({
+        ...prev,
+        [practiceType]: {
+          ...prev[practiceType],
+          step5: true
+        }
+      }));
+    }
   };
 
   return (
@@ -517,15 +783,17 @@ const Annuity = () => {
 
         <div className="text-center text-sm mb-4">
           <div className="font-mono">
-            {practiceType === 'present' ? presentQuestions[currentQuestionIndex].description : futureQuestions[currentQuestionIndex].description}
+            {practiceType === 'present' 
+              ? presentQuestions[questionIndices.present].description 
+              : futureQuestions[questionIndices.future].description}
           </div>
         </div>
 
         <div className="mt-4 space-y-4">
           <div className="w-full p-2 bg-white border border-[#5750E3]/30 rounded-md">
-            {currentStep === 1 && (
+            {currentSteps[practiceType] === 1 && (
               <>
-                <p className="text-sm mb-2 font-bold text-center">{practiceType === 'present' ? presentQuestions[currentQuestionIndex].step1.title : futureQuestions[currentQuestionIndex].step1.title}</p>
+                <p className="text-sm mb-2 font-bold text-center">{practiceType === 'present' ? presentQuestions[questionIndices.present].step1.title : futureQuestions[questionIndices.future].step1.title}</p>
                 <div className="flex flex-wrap gap-2 mb-4 relative justify-center">
                   <div className="flex gap-2 relative z-10">
                     {draggableBoxes.map(box => (
@@ -545,21 +813,21 @@ const Annuity = () => {
                     <div
                       className={`px-2 py-1 bg-gray-100 text-gray-600 rounded-md select-none transition-transform duration-200 ghost-box border border-gray-300`}
                     >
-                      ${practiceType === 'present' ? presentQuestions[currentQuestionIndex].payment : futureQuestions[currentQuestionIndex].payment}
+                      ${practiceType === 'present' ? presentQuestions[questionIndices.present].payment : futureQuestions[questionIndices.future].payment}
                     </div>
                     <div
                       className={`px-2 py-1 bg-gray-100 text-gray-600 rounded-md select-none transition-transform duration-200 ghost-box border border-gray-300`}
                     >
-                      {practiceType === 'present' ? presentQuestions[currentQuestionIndex].rate : futureQuestions[currentQuestionIndex].rate}%
+                      {practiceType === 'present' ? presentQuestions[questionIndices.present].rate : futureQuestions[questionIndices.future].rate}%
                     </div>
                     <div
                       className={`px-2 py-1 bg-gray-100 text-gray-600 rounded-md select-none transition-transform duration-200 ghost-box border border-gray-300`}
                     >
-                      {practiceType === 'present' ? presentQuestions[currentQuestionIndex].periods : futureQuestions[currentQuestionIndex].periods}
+                      {practiceType === 'present' ? presentQuestions[questionIndices.present].periods : futureQuestions[questionIndices.future].periods}
                     </div>
                   </div>
                 </div>
-                {completedSteps.step1 ? (
+                {completedSteps[practiceType].step1 ? (
                   <div className="text-green-600 font-bold select-none">
                     <div className="flex items-center justify-center font-mono text-lg">
                       <span>{practiceType === 'present' ? 'PV' : 'FV'} = {payment} × </span>
@@ -577,16 +845,16 @@ const Annuity = () => {
                   </div>
                 ) : (
                   <div className={`flex items-center justify-center font-mono text-lg select-none ${
-                    Object.values(validationResults).every(result => result === true) ? 'text-green-600' : ''
+                    Object.values(validationResults[practiceType]).every(result => result === true) ? 'text-green-600' : ''
                   }`}>
                     <span>{practiceType === 'present' ? 'PV' : 'FV'} = </span>
                     <div
                       className={`w-16 mx-1 text-center border-2 border-dashed rounded-md drop-zone ${
-                        validationResults.PMT === true 
+                        validationResults[practiceType].PMT === true 
                           ? 'bg-green-100 border-green-500' 
-                          : validationResults.PMT === false 
+                          : validationResults[practiceType].PMT === false 
                             ? 'bg-yellow-100 border-yellow-500' 
-                            : hasError.step1 
+                            : hasError[practiceType].step1 
                               ? 'border-red-500' 
                               : 'border-gray-400'
                       } ${isDragging ? 'drag-over' : ''}`}
@@ -596,11 +864,11 @@ const Annuity = () => {
                     >
                       <div className="flex items-center justify-between w-full min-h-[2rem]">
                         <div className="flex-1 text-center">
-                          <span className={droppedNumbers.PMT ? '' : 'text-gray-400'}>
-                            {droppedNumbers.PMT || 'PMT'}
+                          <span className={droppedNumbers[practiceType].PMT ? '' : 'text-gray-400'}>
+                            {droppedNumbers[practiceType].PMT || 'PMT'}
                           </span>
                         </div>
-                        {droppedNumbers.PMT && (
+                        {droppedNumbers[practiceType].PMT && (
                           <button 
                             className="ml-1 text-gray-400 hover:text-gray-600"
                             onClick={(e) => {
@@ -619,11 +887,11 @@ const Annuity = () => {
                         <span>{practiceType === 'present' ? `(1 - (1 + ` : `((1 + `}</span>
                         <div
                           className={`w-16 mx-1 text-center border-2 border-dashed rounded-md drop-zone ${
-                            validationResults.r === true 
+                            validationResults[practiceType].r === true 
                               ? 'bg-green-100 border-green-500' 
-                              : validationResults.r === false 
+                              : validationResults[practiceType].r === false 
                                 ? 'bg-yellow-100 border-yellow-500' 
-                                : hasError.step1 
+                                : hasError[practiceType].step1 
                                   ? 'border-red-500' 
                                   : 'border-gray-400'
                           } ${isDragging ? 'drag-over' : ''}`}
@@ -633,11 +901,11 @@ const Annuity = () => {
                         >
                           <div className="flex items-center justify-between w-full min-h-[2rem]">
                             <div className="flex-1 text-center">
-                              <span className={droppedNumbers.r ? '' : 'text-gray-400'}>
-                                {droppedNumbers.r || 'r'}
+                              <span className={droppedNumbers[practiceType].r ? '' : 'text-gray-400'}>
+                                {droppedNumbers[practiceType].r || 'r'}
                               </span>
                             </div>
-                            {droppedNumbers.r && (
+                            {droppedNumbers[practiceType].r && (
                               <button 
                                 className="ml-1 text-gray-400 hover:text-gray-600"
                                 onClick={(e) => {
@@ -652,12 +920,12 @@ const Annuity = () => {
                         </div>
                         <span>{practiceType === 'present' ? `)⁻` : `)`}</span>
                         <div
-                          className={`w-16 mx-1 text-center border-2 border-dashed rounded-md drop-zone ${
-                            validationResults.n === true 
+                          className={`w-16 mx-1 text-center border-2 border-dashed rounded-md drop-zone relative -top-2 ${
+                            validationResults[practiceType].n === true 
                               ? 'bg-green-100 border-green-500' 
-                              : validationResults.n === false 
+                              : validationResults[practiceType].n === false 
                                 ? 'bg-yellow-100 border-yellow-500' 
-                                : hasError.step1 
+                                : hasError[practiceType].step1 
                                   ? 'border-red-500' 
                                   : 'border-gray-400'
                           } ${isDragging ? 'drag-over' : ''}`}
@@ -667,11 +935,11 @@ const Annuity = () => {
                         >
                           <div className="flex items-center justify-between w-full min-h-[2rem]">
                             <div className="flex-1 text-center">
-                              <span className={droppedNumbers.n ? '' : 'text-gray-400'}>
-                                {droppedNumbers.n || 'n'}
+                              <span className={droppedNumbers[practiceType].n ? '' : 'text-gray-400'}>
+                                {droppedNumbers[practiceType].n || 'n'}
                               </span>
                             </div>
-                            {droppedNumbers.n && (
+                            {droppedNumbers[practiceType].n && (
                               <button 
                                 className="ml-1 text-gray-400 hover:text-gray-600"
                                 onClick={(e) => {
@@ -689,11 +957,11 @@ const Annuity = () => {
                       <div className="mt-1 min-w-[120px] text-center">
                         <div
                           className={`w-16 text-center border-2 border-dashed rounded-md drop-zone ${
-                            validationResults.r === true 
+                            validationResults[practiceType].r === true 
                               ? 'bg-green-100 border-green-500' 
-                              : validationResults.r === false 
+                              : validationResults[practiceType].r === false 
                                 ? 'bg-yellow-100 border-yellow-500' 
-                                : hasError.step1 
+                                : hasError[practiceType].step1 
                                   ? 'border-red-500' 
                                   : 'border-gray-400'
                           } ${isDragging ? 'drag-over' : ''}`}
@@ -703,11 +971,11 @@ const Annuity = () => {
                         >
                           <div className="flex items-center justify-between w-full min-h-[2rem]">
                             <div className="flex-1 text-center">
-                              <span className={droppedNumbers.r ? '' : 'text-gray-400'}>
-                                {droppedNumbers.r || 'r'}
+                              <span className={droppedNumbers[practiceType].r ? '' : 'text-gray-400'}>
+                                {droppedNumbers[practiceType].r || 'r'}
                               </span>
                             </div>
-                            {droppedNumbers.r && (
+                            {droppedNumbers[practiceType].r && (
                               <button 
                                 className="ml-1 text-gray-400 hover:text-gray-600"
                                 onClick={(e) => {
@@ -725,38 +993,151 @@ const Annuity = () => {
                   </div>
                 )}
                 <div className="mt-8 flex justify-start items-center gap-4">
-                  <button 
-                    onClick={() => checkStepAnswer(1)}
-                    className="px-4 py-2 bg-[#5750E3] text-white rounded-full hover:bg-[#4a42c7] transition-colors duration-200"
-                  >
-                    Check
-                  </button>
-                  {Object.values(validationResults).some(result => result === false) && (
-                    <span className="text-yellow-600 font-bold">Try again!</span>
+                  {!completedSteps[practiceType].step1 ? (
+                    <>
+                      <button 
+                        onClick={() => checkStepAnswer(1)}
+                        className="px-4 py-2 bg-[#5750E3] text-white rounded-full hover:bg-[#4a42c7] transition-colors duration-200"
+                      >
+                        Check
+                      </button>
+                      {Object.values(validationResults[practiceType]).some(result => result === false) && (
+                        <span className="text-yellow-600 font-bold">Try again!</span>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-4">
+                      <span className="text-green-600 font-bold">Great Job!</span>
+                      <button 
+                        onClick={nextQuestion}
+                        className="px-4 py-2 bg-[#5750E3] text-white rounded-full hover:bg-[#4a42c7] transition-colors duration-200"
+                      >
+                        Continue
+                      </button>
+                    </div>
                   )}
                 </div>
               </>
             )}
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Button
-              onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
-              disabled={currentStep === 1}
-              className="w-24 p-1 rounded-md bg-gray-200 text-gray-700 text-sm hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              ← Previous
-            </Button>
-            <span className="text-sm text-gray-500">
-              Step {currentStep} of 1
-            </span>
-            <Button
-              onClick={() => setCurrentStep(prev => Math.min(1, prev + 1))}
-              disabled={currentStep === 1 || !completedSteps[`step${currentStep}`]}
-              className="w-24 p-1 rounded-md bg-[#5750E3] text-white text-sm hover:bg-[#4a42c7] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next →
-            </Button>
+            {currentSteps[practiceType] >= 2 && currentSteps[practiceType] <= 4 && (
+              <>
+                <p className="text-sm mb-4 font-bold text-center">
+                  {practiceType === 'present' 
+                    ? presentQuestions[questionIndices.present].step2.title 
+                    : futureQuestions[questionIndices.future].step2.title}
+                </p>
+                <div className="space-y-6">
+                  {(practiceType === 'present' 
+                    ? presentQuestions[questionIndices.present].step2.questions 
+                    : futureQuestions[questionIndices.future].step2.questions)
+                    .filter((_, index) => index === currentSteps[practiceType] - 2)
+                    .map((question, index) => (
+                    <div key={index} className="space-y-2">
+                      <p className="text-sm font-medium">{question.text}</p>
+                      <div className="flex gap-2">
+                        {question.options.map((option, optionIndex) => (
+                          <button
+                            key={optionIndex}
+                            onClick={() => handleStep2Answer(question.variable, option)}
+                            disabled={completedSteps[practiceType][`step${currentSteps[practiceType]}`]}
+                            className={`px-4 py-2 rounded-md transition-colors duration-200 ${
+                              step2Answers[practiceType][question.variable] === option
+                                ? completedSteps[practiceType][`step${currentSteps[practiceType]}`]
+                                  ? 'bg-green-500 text-white'
+                                  : hasError[practiceType][`step${currentSteps[practiceType]}`] && step2Answers[practiceType][question.variable] === option
+                                    ? 'bg-yellow-500 text-white'
+                                    : 'bg-[#5750E3] text-white'
+                                : 'bg-[#5750E3]/10 text-[#5750E3] hover:bg-[#5750E3]/20'
+                            } ${completedSteps[practiceType][`step${currentSteps[practiceType]}`] ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-8 flex justify-start items-center gap-4">
+                  {completedSteps[practiceType][`step${currentSteps[practiceType]}`] ? (
+                    <div className="flex items-center gap-4">
+                      <span className="text-green-600 font-bold">Great Job!</span>
+                      <button 
+                        onClick={nextQuestion}
+                        className="px-4 py-2 bg-[#5750E3] text-white rounded-full hover:bg-[#4a42c7] transition-colors duration-200"
+                      >
+                        Continue
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-4">
+                      <button 
+                        onClick={checkStep2Answer}
+                        className="px-4 py-2 bg-[#5750E3] text-white rounded-full hover:bg-[#4a42c7] transition-colors duration-200"
+                      >
+                        Check
+                      </button>
+                      {hasError[practiceType][`step${currentSteps[practiceType]}`] && (
+                        <span className="text-yellow-600 font-bold">Try again!</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+            {currentSteps[practiceType] === 5 && (
+              <>
+                <p className="text-sm mb-4 font-bold text-center">Now solve the equation with the values you identified:</p>
+                <div className="space-y-6">
+                  <div className="text-center font-mono text-lg">
+                    <div className="flex items-center justify-center">
+                      <span>{practiceType === 'present' ? 'PV' : 'FV'} = {payment} × </span>
+                      <div className="flex flex-col items-center mx-0.5">
+                        <div className="border-b border-black min-w-[120px] flex items-center justify-center py-2">
+                          {practiceType === 'present' 
+                            ? <span>(1 - (1 + {rate/100})<sup>-{periods}</sup>)</span>
+                            : <span>((1 + {rate/100})<sup>{periods}</sup> - 1)</span>}
+                        </div>
+                        <div className="mt-1 min-w-[120px] text-center">
+                          {rate/100}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="number"
+                      value={step5Answer}
+                      onChange={(e) => setStep5Answer(e.target.value)}
+                      placeholder="Enter your answer"
+                      className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5750E3]"
+                      disabled={completedSteps[practiceType].step5}
+                    />
+                    {!completedSteps[practiceType].step5 && (
+                      <button
+                        onClick={checkStep5Answer}
+                        className={`px-4 py-2 rounded-md transition-colors duration-200 ${
+                          hasError[practiceType].step5
+                            ? 'bg-yellow-500 text-white'
+                            : 'bg-[#5750E3] text-white hover:bg-[#4a42c7]'
+                        }`}
+                      >
+                        Check
+                      </button>
+                    )}
+                  </div>
+                  {hasError[practiceType].step5 && !completedSteps[practiceType].step5 && (
+                    <span className="text-yellow-600 font-bold">Try again!</span>
+                  )}
+                </div>
+                <div className="mt-8 flex justify-start items-center gap-4">
+                  {completedSteps[practiceType].step5 ? (
+                    <div className="flex items-center gap-4">
+                      <span className="text-green-600 font-bold">Great Job!</span>
+                    </div>
+                  ) : null}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
