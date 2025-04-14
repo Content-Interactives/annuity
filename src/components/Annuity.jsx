@@ -785,21 +785,21 @@ const Annuity = () => {
   };
 
   return (
-    <div className="w-[500px] mx-auto mt-5 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.05)] bg-white rounded-lg">
+    <div className="w-[500px] mx-auto mt-5 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.05)] bg-white rounded-lg select-none">
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-[#5750E3] text-sm font-medium">Annuity Explorer</h2>
+          <h2 className="text-[#5750E3] text-sm font-medium select-none">Annuity Explorer</h2>
           <div className="flex gap-2">
             <Button 
               onClick={toggleAnnuityType}
-              className="bg-[#5750E3] hover:bg-[#4a42c7] text-white text-sm px-3 py-1 rounded-md"
+              className="bg-[#5750E3] hover:bg-[#4a42c7] text-white text-sm px-3 py-1 rounded-md select-none touch-manipulation"
             >
               {practiceType === 'present' ? 'Future' : 'Present'} Annuity
             </Button>
           </div>
         </div>
 
-        <div className="text-center text-sm mb-4">
+        <div className="text-center text-sm mb-4 select-none">
           <div className="font-mono">
             {practiceType === 'present' 
               ? presentQuestions[questionIndices.present].description 
@@ -811,13 +811,13 @@ const Annuity = () => {
           <div className="w-full p-2 bg-white border border-[#5750E3]/30 rounded-md">
             {currentSteps[practiceType] === 1 && (
               <>
-                <p className="text-sm mb-2 font-bold text-center">{practiceType === 'present' ? presentQuestions[questionIndices.present].step1.title : futureQuestions[questionIndices.future].step1.title}</p>
+                <p className="text-sm mb-2 font-bold text-center select-none">{practiceType === 'present' ? presentQuestions[questionIndices.present].step1.title : futureQuestions[questionIndices.future].step1.title}</p>
                 <div className="flex flex-wrap gap-2 mb-4 relative justify-center">
                   <div className="flex gap-2 relative z-10">
                     {draggableBoxes.map((box, index) => (
                       <div
                         key={box.id}
-                        className={`px-3 py-1 bg-[#5750E3]/10 text-[#5750E3] rounded-md draggable-box hover:bg-[#5750E3]/20 transition-transform duration-200 ${
+                        className={`px-3 py-1 bg-[#5750E3]/10 text-[#5750E3] rounded-md draggable-box hover:bg-[#5750E3]/20 transition-transform duration-200 select-none touch-manipulation ${
                           isDragging && draggedNumber === box.value ? 'scale-110' : ''
                         }`}
                         draggable="true"
@@ -873,7 +873,7 @@ const Annuity = () => {
                   }`}>
                     <span>{practiceType === 'present' ? 'PV' : 'FV'} = </span>
                     <div
-                      className={`w-16 mx-1 text-center border-2 border-dashed rounded-md drop-zone ${
+                      className={`w-16 mx-1 text-center border-2 border-dashed rounded-md drop-zone touch-manipulation ${
                         validationResults[practiceType].PMT === true 
                           ? 'bg-green-100 border-green-500' 
                           : validationResults[practiceType].PMT === false 
@@ -894,7 +894,7 @@ const Annuity = () => {
                         </div>
                         {droppedNumbers[practiceType].PMT && (
                           <button 
-                            className="ml-1 text-gray-400 hover:text-gray-600"
+                            className="ml-1 text-gray-400 hover:text-gray-600 touch-manipulation"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleRemove('PMT');
@@ -910,7 +910,7 @@ const Annuity = () => {
                       <div className="border-b border-black min-w-[120px] flex items-center justify-center py-2">
                         <span>{practiceType === 'present' ? `(1 - (1 + ` : `((1 + `}</span>
                         <div
-                          className={`w-16 mx-1 text-center border-2 border-dashed rounded-md drop-zone ${
+                          className={`w-16 mx-1 text-center border-2 border-dashed rounded-md drop-zone touch-manipulation ${
                             validationResults[practiceType].r1 === true 
                               ? 'bg-green-100 border-green-500' 
                               : validationResults[practiceType].r1 === false 
@@ -931,7 +931,7 @@ const Annuity = () => {
                             </div>
                             {droppedNumbers[practiceType].r1 && (
                               <button 
-                                className="ml-1 text-gray-400 hover:text-gray-600"
+                                className="ml-1 text-gray-400 hover:text-gray-600 touch-manipulation"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleRemove('r1');
@@ -944,7 +944,7 @@ const Annuity = () => {
                         </div>
                         <span>{practiceType === 'present' ? `)⁻` : `)`}</span>
                         <div
-                          className={`w-16 mx-1 text-center border-2 border-dashed rounded-md drop-zone relative -top-2 ${
+                          className={`w-16 mx-1 text-center border-2 border-dashed rounded-md drop-zone relative -top-2 touch-manipulation ${
                             validationResults[practiceType].n === true 
                               ? 'bg-green-100 border-green-500' 
                               : validationResults[practiceType].n === false 
@@ -965,7 +965,7 @@ const Annuity = () => {
                             </div>
                             {droppedNumbers[practiceType].n && (
                               <button 
-                                className="ml-1 text-gray-400 hover:text-gray-600"
+                                className="ml-1 text-gray-400 hover:text-gray-600 touch-manipulation"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleRemove('n');
@@ -980,7 +980,7 @@ const Annuity = () => {
                       </div>
                       <div className="mt-1 min-w-[120px] text-center">
                         <div
-                          className={`w-16 text-center border-2 border-dashed rounded-md drop-zone ${
+                          className={`w-16 text-center border-2 border-dashed rounded-md drop-zone touch-manipulation ${
                             validationResults[practiceType].r2 === true 
                               ? 'bg-green-100 border-green-500' 
                               : validationResults[practiceType].r2 === false 
@@ -1001,7 +1001,7 @@ const Annuity = () => {
                             </div>
                             {droppedNumbers[practiceType].r2 && (
                               <button 
-                                className="ml-1 text-gray-400 hover:text-gray-600"
+                                className="ml-1 text-gray-400 hover:text-gray-600 touch-manipulation"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleRemove('r2');
@@ -1021,20 +1021,20 @@ const Annuity = () => {
                     <>
                       <button 
                         onClick={() => checkStepAnswer(1)}
-                        className="px-4 py-2 bg-[#5750E3] text-white rounded-full hover:bg-[#4a42c7] transition-colors duration-200"
+                        className="px-4 py-2 bg-[#5750E3] text-white rounded-full hover:bg-[#4a42c7] transition-colors duration-200 select-none touch-manipulation"
                       >
                         Check
                       </button>
                       {Object.values(validationResults[practiceType]).some(result => result === false) && (
-                        <span className="text-yellow-600 font-bold">Try again!</span>
+                        <span className="text-yellow-600 font-bold select-none">Try again!</span>
                       )}
                     </>
                   ) : (
                     <div className="flex items-center gap-4">
-                      <span className="text-green-600 font-bold">Great Job!</span>
+                      <span className="text-green-600 font-bold select-none">Great Job!</span>
                       <button 
                         onClick={nextQuestion}
-                        className="px-4 py-2 bg-[#5750E3] text-white rounded-full hover:bg-[#4a42c7] transition-colors duration-200"
+                        className="px-4 py-2 bg-[#5750E3] text-white rounded-full hover:bg-[#4a42c7] transition-colors duration-200 select-none touch-manipulation"
                       >
                         Continue
                       </button>
@@ -1045,7 +1045,7 @@ const Annuity = () => {
             )}
             {currentSteps[practiceType] >= 2 && currentSteps[practiceType] <= 4 && (
               <>
-                <p className="text-sm mb-4 font-bold text-center">
+                <p className="text-sm mb-4 font-bold text-center select-none">
                   {practiceType === 'present' 
                     ? presentQuestions[questionIndices.present].step2.title 
                     : futureQuestions[questionIndices.future].step2.title}
@@ -1057,14 +1057,14 @@ const Annuity = () => {
                     .filter((_, index) => index === currentSteps[practiceType] - 2)
                     .map((question, index) => (
                     <div key={index} className="space-y-2">
-                      <p className="text-sm font-medium">{question.text}</p>
+                      <p className="text-sm font-medium select-none">{question.text}</p>
                       <div className="flex gap-2">
                         {question.options.map((option, optionIndex) => (
                           <button
                             key={optionIndex}
                             onClick={() => handleStep2Answer(question.variable, option)}
                             disabled={completedSteps[practiceType][`step${currentSteps[practiceType]}`]}
-                            className={`px-4 py-2 rounded-md transition-colors duration-200 ${
+                            className={`px-4 py-2 rounded-md transition-colors duration-200 select-none touch-manipulation ${
                               step2Answers[practiceType][question.variable] === option
                                 ? completedSteps[practiceType][`step${currentSteps[practiceType]}`]
                                   ? 'bg-green-500 text-white'
@@ -1084,10 +1084,10 @@ const Annuity = () => {
                 <div className="mt-8 flex justify-start items-center gap-4">
                   {completedSteps[practiceType][`step${currentSteps[practiceType]}`] ? (
                     <div className="flex items-center gap-4">
-                      <span className="text-green-600 font-bold">Great Job!</span>
+                      <span className="text-green-600 font-bold select-none">Great Job!</span>
                       <button 
                         onClick={nextQuestion}
-                        className="px-4 py-2 bg-[#5750E3] text-white rounded-full hover:bg-[#4a42c7] transition-colors duration-200"
+                        className="px-4 py-2 bg-[#5750E3] text-white rounded-full hover:bg-[#4a42c7] transition-colors duration-200 select-none touch-manipulation"
                       >
                         Continue
                       </button>
@@ -1096,12 +1096,12 @@ const Annuity = () => {
                     <div className="flex items-center gap-4">
                       <button 
                         onClick={checkStep2Answer}
-                        className="px-4 py-2 bg-[#5750E3] text-white rounded-full hover:bg-[#4a42c7] transition-colors duration-200"
+                        className="px-4 py-2 bg-[#5750E3] text-white rounded-full hover:bg-[#4a42c7] transition-colors duration-200 select-none touch-manipulation"
                       >
                         Check
                       </button>
                       {hasError[practiceType][`step${currentSteps[practiceType]}`] && (
-                        <span className="text-yellow-600 font-bold">Try again!</span>
+                        <span className="text-yellow-600 font-bold select-none">Try again!</span>
                       )}
                     </div>
                   )}
@@ -1110,9 +1110,9 @@ const Annuity = () => {
             )}
             {currentSteps[practiceType] === 5 && (
               <>
-                <p className="text-sm mb-4 font-bold text-center">Now solve the equation with the values you identified (round to the nearest hundredth):</p>
+                <p className="text-sm mb-4 font-bold text-center select-none">Now solve the equation with the values you identified (round to the nearest hundredth):</p>
                 <div className="space-y-6">
-                  <div className="text-center font-mono text-lg">
+                  <div className="text-center font-mono text-lg select-none">
                     <div className="flex items-center justify-center">
                       <span>{practiceType === 'present' ? 'PV' : 'FV'} = {payment} × </span>
                       <div className="flex flex-col items-center mx-0.5">
@@ -1147,11 +1147,11 @@ const Annuity = () => {
                             }));
                           }}
                           placeholder="Enter your answer"
-                          className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5750E3]"
+                          className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5750E3] select-none touch-manipulation"
                         />
                         <button
                           onClick={checkStep5Answer}
-                          className={`px-4 py-2 rounded-md transition-colors duration-200 ${
+                          className={`px-4 py-2 rounded-md transition-colors duration-200 select-none touch-manipulation ${
                             hasError[practiceType].step5
                               ? 'bg-yellow-500 text-white'
                               : 'bg-[#5750E3] text-white hover:bg-[#4a42c7]'
@@ -1163,19 +1163,19 @@ const Annuity = () => {
                     ) : (
                       <div className="w-full p-4 bg-green-100 rounded-md">
                         <div className="flex items-center justify-between">
-                          <span className="text-green-600 font-bold">Great Job!</span>
-                          <span className="text-green-600 font-bold">
+                          <span className="text-green-600 font-bold select-none">Great Job!</span>
+                          <span className="text-green-600 font-bold select-none">
                             {practiceType === 'present' ? 'PV' : 'FV'} = {step5Answer[practiceType]}
                           </span>
                         </div>
-                        <div className="mt-2 text-left text-green-600">
+                        <div className="mt-2 text-left text-green-600 select-none">
                           You've successfully navigated through {practiceType} annuities!
                         </div>
                       </div>
                     )}
                   </div>
                   {hasError[practiceType].step5 && !completedSteps[practiceType].step5 && (
-                    <span className="text-yellow-600 font-bold">Try again!</span>
+                    <span className="text-yellow-600 font-bold select-none ml-[5px] mt-[20px]">Try again!</span>
                   )}
                 </div>
               </>
