@@ -443,16 +443,7 @@ const Annuity = () => {
       const rect = element.getBoundingClientRect();
       const parentRect = element.parentElement.getBoundingClientRect();
       
-      const flexContainer = element.parentElement;
-      const flexItems = Array.from(flexContainer.children);
-      const currentIndex = flexItems.indexOf(element);
-      const previousItems = flexItems.slice(0, currentIndex);
-      const totalPreviousWidth = previousItems.reduce((sum, item) => {
-        const itemRect = item.getBoundingClientRect();
-        return sum + itemRect.width;
-      }, 0);
-      
-      currentX = rect.left - parentRect.left - totalPreviousWidth;
+      currentX = rect.left - parentRect.left;
       currentY = rect.top - parentRect.top;
       
       setOriginalPosition({ x: currentX, y: currentY });
@@ -463,18 +454,28 @@ const Annuity = () => {
       setIsReturning(false);
       setDraggedNumber(element.textContent);
       
-      element.classList.add('dragging');
-      element.style.position = 'fixed';
-      element.style.left = `${rect.left}px`;
-      element.style.top = `${rect.top}px`;
-      element.style.zIndex = '1000';
-      
+      // Create placeholder with same order as the original element
       const placeholder = document.createElement('div');
       placeholder.className = 'placeholder';
       placeholder.style.width = `${rect.width}px`;
       placeholder.style.height = `${rect.height}px`;
       placeholder.style.visibility = 'hidden';
+      
+      // Get the index of the current element
+      const flexContainer = element.parentElement;
+      const flexItems = Array.from(flexContainer.children);
+      const currentIndex = flexItems.indexOf(element);
+      
+      // Set the same order as the original element
+      placeholder.style.order = currentIndex === 0 ? '2' : currentIndex === 1 ? '0' : '1';
+      
       element.parentNode.insertBefore(placeholder, element);
+      
+      element.classList.add('dragging');
+      element.style.position = 'fixed';
+      element.style.left = `${rect.left}px`;
+      element.style.top = `${rect.top}px`;
+      element.style.zIndex = '1000';
     };
 
     const elementDrag = (e) => {
