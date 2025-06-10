@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { RefreshCw } from 'lucide-react';
 
 const presentQuestions = [
   {
@@ -48,30 +45,6 @@ const presentQuestions = [
         }
       ]
     }
-  },
-  {
-    payment: 1000,
-    rate: 0.75,
-    periods: 36,
-    description: "Find the present value of $1000 monthly payments for 3 years (36 periods) at 9% annual interest (0.75% monthly)"
-  },
-  {
-    payment: 250,
-    rate: 0.25,
-    periods: 48,
-    description: "Find the present value of $250 monthly payments for 4 years (48 periods) at 3% annual interest (0.25% monthly)"
-  },
-  {
-    payment: 750,
-    rate: 1,
-    periods: 24,
-    description: "Find the present value of $750 monthly payments for 2 years (24 periods) at 12% annual interest (1% monthly)"
-  },
-  {
-    payment: 1500,
-    rate: 0.4,
-    periods: 72,
-    description: "Find the present value of $1500 monthly payments for 6 years (72 periods) at 4.8% annual interest (0.4% monthly)"
   }
 ];
 
@@ -119,30 +92,6 @@ const futureQuestions = [
         }
       ]
     }
-  },
-  {
-    payment: 800,
-    rate: 0.75,
-    periods: 36,
-    description: "Find the future value of $800 monthly deposits for 3 years (36 periods) at 9% annual interest (0.75% monthly)"
-  },
-  {
-    payment: 400,
-    rate: 0.25,
-    periods: 48,
-    description: "Find the future value of $400 monthly deposits for 4 years (48 periods) at 3% annual interest (0.25% monthly)"
-  },
-  {
-    payment: 1200,
-    rate: 1,
-    periods: 24,
-    description: "Find the future value of $1200 monthly deposits for 2 years (24 periods) at 12% annual interest (1% monthly)"
-  },
-  {
-    payment: 600,
-    rate: 0.4,
-    periods: 72,
-    description: "Find the future value of $600 monthly deposits for 6 years (72 periods) at 4.8% annual interest (0.4% monthly)"
   }
 ];
 
@@ -268,6 +217,17 @@ const Annuity = () => {
     present: '',
     future: ''
   });
+  const [isGlowActive, setIsGlowActive] = useState(true);
+  const [showNavigationButtons, setShowNavigationButtons] = useState({
+    present: false,
+    future: false
+  });
+  const [navigationDirection, setNavigationDirection] = useState(null);
+  const [completedQuestions, setCompletedQuestions] = useState({
+    present: [],
+    future: []
+  });
+  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
     setOriginalBoxes({
@@ -287,6 +247,14 @@ const Annuity = () => {
       { id: 'periods-1', value: currentQuestion.periods, type: 'periods' }
     ]);
   }, [practiceType, questionIndices]);
+
+  useEffect(() => {
+    const allStepsCompleted = Object.values(completedSteps[practiceType]).every(step => step === true);
+    setShowNavigationButtons(prev => ({
+      ...prev,
+      [practiceType]: allStepsCompleted
+    }));
+  }, [completedSteps, practiceType]);
 
   const calculatePresentValue = (pmt, r, n) => {
     return pmt * (1 - Math.pow(1 + r, -n)) / r;
@@ -394,6 +362,7 @@ const Annuity = () => {
       setPayment(question.payment);
       setRate(question.rate);
       setPeriods(question.periods);
+      setIsNavigating(false);
       return newType;
     });
   };
@@ -784,15 +753,130 @@ const Annuity = () => {
     }
   };
 
+  const handleNavigateHistory = (direction) => {
+    setNavigationDirection(direction);
+    setIsNavigating(true);
+    
+    if (direction === 'back' && currentSteps[practiceType] > 1) {
+      setCurrentSteps(prev => ({
+        ...prev,
+        [practiceType]: prev[practiceType] - 1
+      }));
+    } else if (direction === 'forward' && currentSteps[practiceType] < 5) {
+      setCurrentSteps(prev => ({
+        ...prev,
+        [practiceType]: prev[practiceType] + 1
+      }));
+    }
+
+    // Reset direction after animation
+    setTimeout(() => {
+      setNavigationDirection(null);
+    }, 300);
+  };
+
   return (
     <div className="w-[500px] mx-auto mt-5 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.05)] bg-white rounded-lg select-none">
+      <style>{`
+        @property --r {
+          syntax: '<angle>';
+          inherits: false;
+          initial-value: 0deg;
+        }
+
+        .simple-glow {
+          background: conic-gradient(
+            from var(--r),
+            transparent 0%,
+            rgb(0, 255, 132) 2%,
+            rgb(0, 214, 111) 8%,
+            rgb(0, 174, 90) 12%,
+            rgb(0, 133, 69) 14%,
+            transparent 15%
+          );
+          animation: rotating 3s linear infinite;
+          transition: animation 0.3s ease;
+        }
+
+        @keyframes rotating {
+          from {
+            --r: 0deg;
+          }
+          to {
+            --r: 360deg;
+          }
+        }
+
+        .glow-button { 
+          min-width: auto; 
+          height: auto; 
+          position: relative; 
+          border-radius: 8px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1;
+          transition: all .3s ease;
+          padding: 7px;
+        }
+
+        .glow-button::before {
+          content: "";
+          display: block;
+          position: absolute;
+          background: #fff;
+          inset: 2px;
+          border-radius: 4px;
+          z-index: -2;
+        }
+
+        .nav-button {
+          opacity: 1;
+          cursor: default !important;
+          position: relative;
+          z-index: 2;
+          outline: 2px white solid;
+        }
+
+        .nav-button-orbit {
+          position: absolute;
+          inset: -4px;
+          border-radius: 50%;
+          background: conic-gradient(
+            from var(--r),
+            transparent 0%,
+            rgb(0, 255, 132) 2%,
+            rgb(0, 214, 111) 8%,
+            rgb(0, 174, 90) 12%,
+            rgb(0, 133, 69) 14%,
+            transparent 15%
+          );
+          animation: rotating 3s linear infinite;
+          z-index: 0;
+        }
+
+        .nav-button-orbit::before {
+          content: "";
+          position: absolute;
+          inset: 2px;
+          background: transparent;
+          border-radius: 50%;
+          z-index: 0;
+        }
+
+        .nav-button svg {
+          position: relative;
+          z-index: 1;
+        }
+      `}</style>
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-[#5750E3] text-sm font-medium select-none">Annuity Explorer</h2>
           <div className="flex gap-2">
             <Button 
               onClick={toggleAnnuityType}
-              className="bg-[#5750E3] hover:bg-[#4a42c7] text-white text-sm px-3 py-1 rounded-md select-none touch-manipulation"
+              className="bg-[#008545] hover:bg-[#00783E] text-white text-sm px-3 py-1 rounded-md select-none touch-manipulation"
             >
               {practiceType === 'present' ? 'Future' : 'Present'} Annuity
             </Button>
@@ -1016,28 +1100,36 @@ const Annuity = () => {
                     </div>
                   </div>
                 )}
-                <div className="mt-8 flex justify-start items-center gap-4">
+                <div className="mt-8 flex justify-end items-center gap-4">
                   {!completedSteps[practiceType].step1 ? (
                     <>
-                      <button 
-                        onClick={() => checkStepAnswer(1)}
-                        className="px-4 py-2 bg-[#5750E3] text-white rounded-full hover:bg-[#4a42c7] transition-colors duration-200 select-none touch-manipulation"
-                      >
-                        Check
-                      </button>
                       {Object.values(validationResults[practiceType]).some(result => result === false) && (
                         <span className="text-yellow-600 font-bold select-none">Try again!</span>
                       )}
+                      <div className={`glow-button ${isGlowActive ? 'simple-glow' : ''}`}>
+                        <button 
+                          onClick={() => checkStepAnswer(1)}
+                          className="px-4 py-2 bg-[#008545] text-white rounded-md hover:bg-[#00783E] transition-colors duration-200 select-none touch-manipulation"
+                        >
+                          Check
+                        </button>
+                      </div>
                     </>
                   ) : (
                     <div className="flex items-center gap-4">
-                      <span className="text-green-600 font-bold select-none">Great Job!</span>
-                      <button 
-                        onClick={nextQuestion}
-                        className="px-4 py-2 bg-[#5750E3] text-white rounded-full hover:bg-[#4a42c7] transition-colors duration-200 select-none touch-manipulation"
-                      >
-                        Continue
-                      </button>
+                      {!isNavigating && (
+                        <>
+                          <span className="text-green-600 font-bold select-none">Great Job!</span>
+                          <div className={`glow-button ${isGlowActive ? 'simple-glow' : ''}`}>
+                            <button 
+                              onClick={nextQuestion}
+                              className="px-4 py-2 bg-[#008545] text-white rounded-md hover:bg-[#00783E] transition-colors duration-200 select-none touch-manipulation"
+                            >
+                              Continue
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1045,11 +1137,6 @@ const Annuity = () => {
             )}
             {currentSteps[practiceType] >= 2 && currentSteps[practiceType] <= 4 && (
               <>
-                <p className="text-sm mb-4 font-bold text-center select-none">
-                  {practiceType === 'present' 
-                    ? presentQuestions[questionIndices.present].step2.title 
-                    : futureQuestions[questionIndices.future].step2.title}
-                </p>
                 <div className="space-y-6">
                   {(practiceType === 'present' 
                     ? presentQuestions[questionIndices.present].step2.questions 
@@ -1058,13 +1145,13 @@ const Annuity = () => {
                     .map((question, index) => (
                     <div key={index} className="space-y-2">
                       <p className="text-sm font-medium select-none">{question.text}</p>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 justify-center">
                         {question.options.map((option, optionIndex) => (
                           <button
                             key={optionIndex}
                             onClick={() => handleStep2Answer(question.variable, option)}
                             disabled={completedSteps[practiceType][`step${currentSteps[practiceType]}`]}
-                            className={`px-4 py-2 rounded-md transition-colors duration-200 select-none touch-manipulation ${
+                            className={`w-34 px-4 py-2 rounded-md transition-colors duration-200 select-none touch-manipulation ${
                               step2Answers[practiceType][question.variable] === option
                                 ? completedSteps[practiceType][`step${currentSteps[practiceType]}`]
                                   ? 'bg-green-500 text-white'
@@ -1072,7 +1159,7 @@ const Annuity = () => {
                                     ? 'bg-yellow-500 text-white'
                                     : 'bg-[#5750E3] text-white'
                                 : 'bg-[#5750E3]/10 text-[#5750E3] hover:bg-[#5750E3]/20'
-                            } ${completedSteps[practiceType][`step${currentSteps[practiceType]}`] ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                            } ${completedSteps[practiceType][`step${currentSteps[practiceType]}`] ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                           >
                             {option}
                           </button>
@@ -1081,28 +1168,36 @@ const Annuity = () => {
                     </div>
                   ))}
                 </div>
-                <div className="mt-8 flex justify-start items-center gap-4">
+                <div className="mt-3 flex justify-end items-center gap-4">
                   {completedSteps[practiceType][`step${currentSteps[practiceType]}`] ? (
                     <div className="flex items-center gap-4">
-                      <span className="text-green-600 font-bold select-none">Great Job!</span>
-                      <button 
-                        onClick={nextQuestion}
-                        className="px-4 py-2 bg-[#5750E3] text-white rounded-full hover:bg-[#4a42c7] transition-colors duration-200 select-none touch-manipulation"
-                      >
-                        Continue
-                      </button>
+                      {!isNavigating && (
+                        <>
+                          <span className="text-green-600 font-bold select-none">Great Job!</span>
+                          <div className={`glow-button ${isGlowActive ? 'simple-glow' : ''}`}>
+                            <button 
+                              onClick={nextQuestion}
+                              className="px-4 py-2 bg-[#008545] text-white rounded-md hover:bg-[#00783E] transition-colors duration-200 select-none touch-manipulation"
+                            >
+                              Continue
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   ) : (
                     <div className="flex items-center gap-4">
-                      <button 
-                        onClick={checkStep2Answer}
-                        className="px-4 py-2 bg-[#5750E3] text-white rounded-full hover:bg-[#4a42c7] transition-colors duration-200 select-none touch-manipulation"
-                      >
-                        Check
-                      </button>
                       {hasError[practiceType][`step${currentSteps[practiceType]}`] && (
                         <span className="text-yellow-600 font-bold select-none">Try again!</span>
                       )}
+                      <div className={`glow-button ${isGlowActive ? 'simple-glow' : ''}`}>
+                        <button 
+                          onClick={checkStep2Answer}
+                          className="px-4 py-2 bg-[#008545] text-white rounded-md hover:bg-[#00783E] transition-colors duration-200 select-none touch-manipulation"
+                        >
+                          Check
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1130,35 +1225,38 @@ const Annuity = () => {
                   <div className="flex items-center gap-4">
                     {!completedSteps[practiceType].step5 ? (
                       <>
-                        <input
-                          type="number"
-                          value={step5Answer[practiceType]}
-                          onChange={(e) => {
-                            setStep5Answer(prev => ({
-                              ...prev,
-                              [practiceType]: e.target.value
-                            }));
-                            setHasError(prev => ({
-                              ...prev,
-                              [practiceType]: {
-                                ...prev[practiceType],
-                                step5: false
-                              }
-                            }));
-                          }}
-                          placeholder="Enter your answer"
-                          className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5750E3] select-none touch-manipulation"
-                        />
-                        <button
-                          onClick={checkStep5Answer}
-                          className={`px-4 py-2 rounded-md transition-colors duration-200 select-none touch-manipulation ${
-                            hasError[practiceType].step5
-                              ? 'bg-yellow-500 text-white'
-                              : 'bg-[#5750E3] text-white hover:bg-[#4a42c7]'
-                          }`}
-                        >
-                          Check
-                        </button>
+                        <div className="flex-1">
+                          <input
+                            type="number"
+                            value={step5Answer[practiceType]}
+                            onChange={(e) => {
+                              setStep5Answer(prev => ({
+                                ...prev,
+                                [practiceType]: e.target.value
+                              }));
+                              setHasError(prev => ({
+                                ...prev,
+                                [practiceType]: {
+                                  ...prev[practiceType],
+                                  step5: false
+                                }
+                              }));
+                            }}
+                            placeholder="Enter your answer"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5750E3] select-none touch-manipulation ml-2"
+                          />
+                        </div>
+                        {hasError[practiceType].step5 && !completedSteps[practiceType].step5 && (
+                          <span className="text-yellow-600 font-bold select-none ml-2">Try again!</span>
+                        )}
+                        <div className={`glow-button ${isGlowActive ? 'simple-glow' : ''}`}>
+                          <button
+                            onClick={checkStep5Answer}
+                            className="px-4 py-2 bg-[#008545] text-white rounded-md hover:bg-[#00783E] transition-colors duration-200 select-none touch-manipulation"
+                          >
+                            Check
+                          </button>
+                        </div>
                       </>
                     ) : (
                       <div className="w-full p-4 bg-green-100 rounded-md">
@@ -1174,12 +1272,75 @@ const Annuity = () => {
                       </div>
                     )}
                   </div>
-                  {hasError[practiceType].step5 && !completedSteps[practiceType].step5 && (
-                    <span className="text-yellow-600 font-bold select-none ml-[5px] mt-[20px]">Try again!</span>
-                  )}
                 </div>
               </>
             )}
+          </div>
+        </div>
+
+        {/* Update the navigation buttons section */}
+        <div 
+          className="flex items-center justify-center gap-2 mt-4"
+          style={{
+            display: showNavigationButtons[practiceType] ? 'flex' : 'none'
+          }}
+        >
+          <div
+            className="nav-orbit-wrapper"
+            style={{
+              position: 'relative',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              visibility: currentSteps[practiceType] > 1 ? 'visible' : 'hidden',
+              opacity: currentSteps[practiceType] > 1 ? 1 : 0,
+              pointerEvents: currentSteps[practiceType] > 1 ? 'auto' : 'none',
+              transition: 'opacity 0.2s ease',
+            }}
+          >
+            <div className="nav-button-orbit"></div>
+            {/* Mask to hide orbit under button */}
+            <div style={{ position: 'absolute', width: '32px', height: '32px', borderRadius: '50%', background: 'white', zIndex: 1 }}></div>
+            <button
+              onClick={() => handleNavigateHistory('back')}
+              className={`nav-button w-8 h-8 flex items-center justify-center rounded-full bg-[#008545]/20 text-[#008545] hover:bg-[#008545]/30 relative z-50 grow-in`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
+            </button>
+          </div>
+          <span className="text-sm text-gray-500 min-w-[100px] text-center">
+            Step {currentSteps[practiceType]} of 5
+          </span>
+          <div
+            className="nav-orbit-wrapper"
+            style={{
+              position: 'relative',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              visibility: currentSteps[practiceType] < 5 ? 'visible' : 'hidden',
+              opacity: currentSteps[practiceType] < 5 ? 1 : 0,
+              pointerEvents: currentSteps[practiceType] < 5 ? 'auto' : 'none',
+              transition: 'opacity 0.2s ease',
+            }}
+          >
+            <div className="nav-button-orbit"></div>
+            {/* Mask to hide orbit under button */}
+            <div style={{ position: 'absolute', width: '32px', height: '32px', borderRadius: '50%', background: 'white', zIndex: 1 }}></div>
+            <button
+              onClick={() => handleNavigateHistory('forward')}
+              className={`nav-button w-8 h-8 flex items-center justify-center rounded-full bg-[#008545]/20 text-[#008545] hover:bg-[#008545]/30 relative z-50`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
