@@ -227,7 +227,10 @@ const Annuity = () => {
     present: [],
     future: []
   });
-  const [isNavigating, setIsNavigating] = useState(false);
+  const [isNavigating, setIsNavigating] = useState({
+    present: false,
+    future: false
+  });
 
   useEffect(() => {
     setOriginalBoxes({
@@ -250,10 +253,16 @@ const Annuity = () => {
 
   useEffect(() => {
     const allStepsCompleted = Object.values(completedSteps[practiceType]).every(step => step === true);
-    setShowNavigationButtons(prev => ({
-      ...prev,
-      [practiceType]: allStepsCompleted
-    }));
+    if (allStepsCompleted) {
+      setShowNavigationButtons(prev => ({
+        ...prev,
+        [practiceType]: true
+      }));
+      setIsNavigating(prev => ({
+        ...prev,
+        [practiceType]: true
+      }));
+    }
   }, [completedSteps, practiceType]);
 
   const calculatePresentValue = (pmt, r, n) => {
@@ -362,7 +371,6 @@ const Annuity = () => {
       setPayment(question.payment);
       setRate(question.rate);
       setPeriods(question.periods);
-      setIsNavigating(false);
       return newType;
     });
   };
@@ -755,7 +763,6 @@ const Annuity = () => {
 
   const handleNavigateHistory = (direction) => {
     setNavigationDirection(direction);
-    setIsNavigating(true);
     
     if (direction === 'back' && currentSteps[practiceType] > 1) {
       setCurrentSteps(prev => ({
@@ -1117,7 +1124,7 @@ const Annuity = () => {
                     </>
                   ) : (
                     <div className="flex items-center gap-4">
-                      {!isNavigating && (
+                      {!isNavigating[practiceType] && (
                         <>
                           <span className="text-green-600 font-bold select-none">Great Job!</span>
                           <div className={`glow-button ${isGlowActive ? 'simple-glow' : ''}`}>
@@ -1171,7 +1178,7 @@ const Annuity = () => {
                 <div className="mt-3 flex justify-end items-center gap-4">
                   {completedSteps[practiceType][`step${currentSteps[practiceType]}`] ? (
                     <div className="flex items-center gap-4">
-                      {!isNavigating && (
+                      {!isNavigating[practiceType] && (
                         <>
                           <span className="text-green-600 font-bold select-none">Great Job!</span>
                           <div className={`glow-button ${isGlowActive ? 'simple-glow' : ''}`}>
