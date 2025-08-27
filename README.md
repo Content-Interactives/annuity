@@ -1,12 +1,42 @@
-# React + Vite
+# Annuity
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The **Annuity** interactive helps students explore how annuities work and how payments grow over time. By adjusting values such as payment amount, interest rate, and number of periods, students can visualize how the total value of an annuity is calculated.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🔗 Live Interactive
 
-## Expanding the ESLint configuration
+Try it out here:  
+👉 [https://content-interactives.github.io/annuity](https://content-interactives.github.io/annuity)
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 🌐 Where This Interactive Is Being Used
+
+This interactive is currently featured in the following locations:
+
+- <img width="20" height="20" alt="image" src="https://github.com/user-attachments/assets/5d12571f-8e12-4441-98ab-c0bc94069a96" /> **CK-12 Intent Response**  
+  - 👉 PRODUCTION: PENDING  
+  - 👉 MASTER: PENDING  
+- 📘 **CK-12 Flexbooks**
+  - 👉 PENDING
+
+---
+
+## 📚 Standards & Subjects
+
+This interactive aligns with the following topics and standards:
+
+- **📂 Subject Area**: High School Math  
+- **🧮 Topic**: Sequences, Exponents, and Financial Applications (Annuities)  
+- **📏 Common Core**:  
+  - HSF-IF.B.4 – For a function that models a relationship between two quantities, interpret key features of graphs and tables in terms of the quantities.  
+  - HSF-BF.A.1 – Write a function that describes a relationship between two quantities.  
+  - HSA-SSE.B.3 – Choose and produce an equivalent form of an expression to reveal and explain properties of the quantity represented.
+
+---
+
+## 🛠️ Developer Notes
+
+- Built with: React, HTML, CSS, JavaScript  
+- Deployed via GitHub Pages
