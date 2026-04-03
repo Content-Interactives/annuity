@@ -1,42 +1,54 @@
 # Annuity
 
-The **Annuity** interactive helps students explore how annuities work and how payments grow over time. By adjusting values such as payment amount, interest rate, and number of periods, students can visualize how the total value of an annuity is calculated.
+React + Vite app for exploring ordinary annuity future value: user-adjustable payment, rate, and period count drive computed totals and charts. Core logic and layout are in `Annuity.jsx`.
+
+**Live site:** [https://content-interactives.github.io/annuity](https://content-interactives.github.io/annuity)
+
+Curriculum alignment and placement: [Standards.md](Standards.md).
 
 ---
 
-## 🔗 Live Interactive
+## Stack
 
-Try it out here:  
-👉 [https://content-interactives.github.io/annuity](https://content-interactives.github.io/annuity)
-
----
-
-## 🌐 Where This Interactive Is Being Used
-
-This interactive is currently featured in the following locations:
-
-- <img width="20" height="20" alt="image" src="https://github.com/user-attachments/assets/5d12571f-8e12-4441-98ab-c0bc94069a96" /> **CK-12 Intent Response**  
-  - 👉 PRODUCTION: PENDING  
-  - 👉 MASTER: PENDING  
-- 📘 **CK-12 Flexbooks**
-  - 👉 PENDING
+| Layer | Notes |
+|--------|--------|
+| Build | Vite 6, `@vitejs/plugin-react` |
+| UI | React 19 |
+| Styling | Tailwind 3 |
+| Icons | lucide-react |
+| Deploy | `gh-pages -d dist`; `predeploy` runs `vite build` |
 
 ---
 
-## 📚 Standards & Subjects
+## Layout
 
-This interactive aligns with the following topics and standards:
-
-- **📂 Subject Area**: High School Math  
-- **🧮 Topic**: Sequences, Exponents, and Financial Applications (Annuities)  
-- **📏 Common Core**:  
-  - HSF-IF.B.4 – For a function that models a relationship between two quantities, interpret key features of graphs and tables in terms of the quantities.  
-  - HSF-BF.A.1 – Write a function that describes a relationship between two quantities.  
-  - HSA-SSE.B.3 – Choose and produce an equivalent form of an expression to reveal and explain properties of the quantity represented.
+```
+vite.config.js          # base: '/annuity/'
+src/
+  main.jsx → App.jsx → components/Annuity.jsx
+  components/ui/
+```
 
 ---
 
-## 🛠️ Developer Notes
+## `vite.config.js`
 
-- Built with: React, HTML, CSS, JavaScript  
-- Deployed via GitHub Pages
+`base: '/annuity/'` must match the GitHub Pages repository path.
+
+---
+
+## Scripts
+
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | Vite dev server |
+| `npm run build` | Production build → `dist/` |
+| `npm run preview` | Preview production build |
+| `npm run lint` | ESLint |
+| `npm run deploy` | Build and push `dist/` to `gh-pages` |
+
+---
+
+## Embedding
+
+Uses shared shell components; check `Annuity.jsx` for height and overflow when embedding.
